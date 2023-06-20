@@ -1,0 +1,60 @@
+{
+	"kinematicList": [
+		{
+			"col": "$CONTENT_DATA/Kinematics/Mesh/TieFighter.obj",
+			"collides": {
+				"body": true,
+				"character": true,
+				"melee": true,
+				"projectile": true
+			},
+			"color": "000000",
+			"mass": 10000.0,
+			"material": "Metal",
+			"name": "Tie Fighter",
+			"removable": false,
+			"renderable": "$CONTENT_DATA/Kinematics/Renderables/TieFighter.rend",
+			"script": {
+				"class": "Fighter",
+				"data": {},
+				"file": "$CONTENT_DATA/Scripts/SpaceShip.lua",
+				"seat": {
+					"bones": [
+						{
+							"name": "Hips",
+							"offset": {
+								"x": 0.0,
+								"y": -0.064,
+								"z": -0.544
+							}
+						},
+						{
+							"name": "LeftForeArm",
+							"offset": {
+								"x": 1.172,
+								"y": 0.968,
+								"z": 0.968
+							},
+							"freeRotation": true,
+							"steers": true
+						},
+						{
+							"name": "RightForeArm",
+							"offset": {
+								"x": -1.172,
+								"y": 0.968,
+								"z": 0.968
+							},
+							"freeRotation": true,
+							"steers": true
+						}
+					],
+					"ragdollFile": "$GAME_DATA/Character/seat_ragdoll.json",
+					"enterAudio": "Seat seated",
+					"exitAudio": "Seat unseated"
+				}
+			},
+			"uuid": "45c52a91-cf19-4fc8-9e64-7b6f8078e68d"
+		}
+	]
+}

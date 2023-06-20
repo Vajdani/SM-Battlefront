@@ -1,0 +1,8 @@
+{
+   "characterSetList" : [
+      "$SURVIVAL_DATA/Character/CharacterSets/robots.json",
+		"$SURVIVAL_DATA/Character/CharacterSets/animals.json",
+
+      "$CONTENT_DATA/Characters/Database/CharacterSets/example.characterset"
+   ]
+}

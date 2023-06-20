@@ -1,0 +1,24 @@
+{
+    "Cutter_beam_sound" : {
+		"effectList" : [
+			{
+				"audio" : [ "event:/tools/connectiontool/connectiontool_fire" ],
+				"delay" : 0.0,
+				"offset" : [ 0.0, 0.0, 0.0 ],
+				"type" : "audio"
+			}
+		]
+	},
+    "Beam_shoot":
+	{
+		"effectList":
+		[
+			{
+				"type": "audio",
+				"name": "event:/props/installations/powercore_insert",
+				"offset": { "x": 0.0, "y": 0.0, "z": 0.0 },
+				"delay": 0.0
+			}
+		]
+	}
+}
