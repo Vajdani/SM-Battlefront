@@ -15,7 +15,7 @@
 			"removable": false,
 			"renderable": "$CONTENT_DATA/Kinematics/Renderables/TieFighter.rend",
 			"script": {
-				"class": "Fighter",
+				"class": "TieFighter",
 				"data": {},
 				"file": "$CONTENT_DATA/Scripts/SpaceShip.lua",
 				"seat": {

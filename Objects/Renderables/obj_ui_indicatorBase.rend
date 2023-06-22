@@ -1,0 +1,17 @@
+{
+   "lodList" : [
+      {
+         "mesh" : "$SURVIVAL_DATA/Objects/Mesh/building/obj_building_barracksupport.fbx",
+         "subMeshList" : [
+            {
+               "material" : "ConnectJoint",
+               "textureList" : [
+                  "$SURVIVAL_DATA/Objects/Textures/building/obj_building_barracksupport_dif.tga",
+                  "$SURVIVAL_DATA/Objects/Textures/building/obj_building_barracksupport_asg.tga",
+                  "$SURVIVAL_DATA/Objects/Textures/building/obj_building_barracksupport_nor.tga"
+               ]
+            }
+         ]
+      }
+   ]
+}

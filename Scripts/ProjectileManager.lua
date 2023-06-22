@@ -29,8 +29,32 @@ function ProjectileManager:sv_createProjectile(args)
     self.network:sendToClients("cl_createProjectile", args)
 end
 
-function ProjectileManager:sv_onLaserHit( pos )
+function ProjectileManager:sv_onLaserHit( args )
+	local pos = args.pos
 	sm.physics.explode( pos, 5, 2.5, 5, 50, "PropaneTank - ExplosionSmall" )
+
+	if args.ship then
+		sm.event.sendToHarvestable(
+			args.ship, "sv_takeDamage",
+			{
+				damage = 15,
+				source = args.source
+			}
+		)
+	end
+
+	local harvestables = sm.physics.getSphereContacts(pos, 5).harvestables
+	for k, v in pairs(harvestables) do
+		if v:hasSeat() then
+			sm.event.sendToHarvestable(
+				v, "sv_takeDamage",
+				{
+					damage = (5 / (v.worldPosition - pos):length()) * 5,
+					source = args.source
+				}
+			)
+		end
+	end
 end
 
 
@@ -65,7 +89,14 @@ function ProjectileManager:client_onUpdate(dt)
 		local hit, result = sm.physics.spherecast( currentPos, currentPos + dir * 2.5, 1 )
 		if hit or laser.lifeTime <= 0 then
 			if self.sv_host == true then
-				self.network:sendToServer("sv_onLaserHit", result.pointWorld)
+				self.network:sendToServer(
+					"sv_onLaserHit",
+					{
+						pos = result.pointWorld,
+						ship = result:getHarvestable(),
+						source = DAMAGESOURCE.genericProjectile
+					}
+				)
 			end
 
 			laser.line:destroy()

@@ -13,6 +13,16 @@ LANDABLESURFACES = {
     body = true
 }
 LANDRAYCASTFILTER = sm.physics.filter.terrainAsset + sm.physics.filter.terrainSurface + sm.physics.filter.staticBody + sm.physics.filter.harvestable
+PROJECTILERAYCASTFILTER = sm.physics.filter.staticBody + sm.physics.filter.dynamicBody + sm.physics.filter.harvestable + sm.physics.filter.character
+
+DAMAGESOURCE = {
+    collision = 1,
+    genericProjectile = 2,
+    homingProjectile = 3,
+    bomb = 4,
+    projectile = 5,
+    melee = 6
+}
 
 function bVal(bool)
     return bool and 1 or 0
@@ -200,12 +210,12 @@ Line_indicator = class()
 ---@field destroy function
 function Line_indicator:init( thickness, colour )
     self.line = sm.effect.createEffect("ShapeRenderable")
-	self.line:setParameter("uuid", sm.uuid.new("0dba257b-b907-4919-baaf-2fefe19f4e24"))
+	self.line:setParameter("uuid", sm.uuid.new("5827d49c-c710-4897-b75c-39792623a6b8"))
     self.line:setParameter("color", colour)
     self.line:setScale( VEC3_ONE * thickness )
 
     self.base = sm.effect.createEffect("ShapeRenderable")
-	self.base:setParameter("uuid", sm.uuid.new("9b4ea447-9cd9-4cd1-84d5-8c414890e523"))
+	self.base:setParameter("uuid", sm.uuid.new("6ab9cd3f-2a8c-48d8-ac1a-514f87927604"))
     self.base:setParameter("color", colour)
     self.base:setScale( VEC3_ONE * thickness * 0.75 )
 

@@ -2,18 +2,6 @@
    "toolList" : [
       {
          "autoTool" : true,
-         "name" : "Input",
-         "previewRenderable" : "$GAME_DATA/Character/Char_Tools/char_connecttool_preview.rend",
-         "previewRotation" : [ 1, 0, 0, 0, 0, -1, 0, 1, 0 ],
-         "script" : {
-            "class" : "Input",
-            "data" : {},
-            "file" : "$CONTENT_DATA/Scripts/Input.lua"
-         },
-         "uuid" : "0c46586e-140c-4a60-93d3-ef29997f1429"
-      },
-      {
-         "autoTool" : true,
          "name" : "ProjectileManager",
          "previewRenderable" : "$GAME_DATA/Character/Char_Tools/char_connecttool_preview.rend",
          "previewRotation" : [ 1, 0, 0, 0, 0, -1, 0, 1, 0 ],

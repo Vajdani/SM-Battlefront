@@ -1,0 +1,87 @@
+{
+   "partList" : [
+      {
+         "color" : "7a7a7a",
+         "hull" : {
+            "col" : "$GAME_DATA/Objects/Collision/small_2way_pipe.obj",
+            "margin" : 0.250,
+            "x" : 1,
+            "y" : 1,
+            "z" : 1
+         },
+         "name" : "obj_beam",
+         "physicsMaterial" : "Metal",
+         "previewRotation" : [ 0, 0, -1, 1, 0, 0, 0, 1, 0 ],
+         "renderable" : {
+            "lodList" : [
+               {
+                  "includes" : [ "POSITION", "UV0", "UV1", "NORMAL", "TANGENTS" ],
+                  "mesh" : "$GAME_DATA/Objects/Mesh/fittings/small_2way_pipe.fbx",
+                  "subMeshList" : [
+                     {
+                        "material" : "DifAsgNorAo",
+                        "textureList" : [
+                           "$GAME_DATA/Objects/Textures/industrial/obj_atlas_generic_dif.tga",
+                           "$CONTENT_DATA/Objects/Textures/obj_atlas_generic_asg.tga",
+                           "$GAME_DATA/Objects/Textures/industrial/obj_atlas_generic_nor.tga",
+                           "$GAME_DATA/Objects/Textures/fittings/obj_fittings_small_pipe_ao.tga"
+                        ]
+                     }
+                  ]
+               }
+            ]
+         },
+         "rotationSet" : "PropXmm",
+         "showInInventory" : false,
+         "sticky" : "-X+X",
+         "uuid" : "8ea315c3-23bc-448c-9feb-9a32ce39b7de"
+      },
+      {
+         "color" : "7a7a7a",
+         "flammable" : false,
+         "hull" : {
+            "col" : "$GAME_DATA/Objects/Collision/small_2way_pipe.obj",
+            "margin" : 0.250,
+            "x" : 1,
+            "y" : 1,
+            "z" : 1
+         },
+         "name" : "obj_ui_indicatorLine",
+         "physicsMaterial" : "Metal",
+         "previewRotation" : [ 0, 0, -1, 1, 0, 0, 0, 1, 0 ],
+         "ratings" : {
+            "buoyancy" : 3,
+            "density" : 2,
+            "durability" : 4,
+            "friction" : 3
+         },
+         "renderable" : "$CONTENT_DATA/Objects/Renderables/obj_ui_indicatorLine.rend",
+         "rotationSet" : "PropXmm",
+         "stackSize" : 10,
+         "sticky" : "-X+X",
+         "uuid" : "5827d49c-c710-4897-b75c-39792623a6b8"
+      },
+      {
+         "color" : "ee9e28",
+         "cylinder" : {
+            "axis" : "Y",
+            "depth" : 1,
+            "diameter" : 3,
+            "margin" : 0.040
+         },
+         "flammable" : false,
+         "name" : "obj_ui_indicatorBase",
+         "physicsMaterial" : "Metal",
+         "ratings" : {
+            "buoyancy" : 1,
+            "density" : 5,
+            "durability" : 4,
+            "friction" : 3
+         },
+         "renderable" : "$CONTENT_DATA/Objects/Renderables/obj_ui_indicatorBase.rend",
+         "rotationSet" : "PropY",
+         "sticky" : "-Y+Y",
+         "uuid" : "6ab9cd3f-2a8c-48d8-ac1a-514f87927604"
+      }
+   ]
+}

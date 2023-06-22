@@ -45,6 +45,7 @@
 		// Override
 		"$CHALLENGE_DATA/Objects/Database/ShapeSets/override.json",
       
-      "$CONTENT_DATA/Objects/Database/ShapeSets/parts.shapeset"
+      "$CONTENT_DATA/Objects/Database/ShapeSets/parts.shapeset",
+      "$CONTENT_DATA/Objects/Database/ShapeSets/shapeRenderables.shapeset"
    ]
 }
