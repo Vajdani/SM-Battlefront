@@ -297,7 +297,7 @@ function Line_beam:update( startPos, endPos )
 
 	--this shit kills my gpu if its done every frame
 	--[[if sm.game.getCurrentTick() % 2 == 0 then
-		sm.particle.createParticle( "cutter_block_destroy", endPos, QUAT_ZERO, self.colour )
+		sm.particle.createParticle( "beam_impact", endPos, QUAT_ZERO, self.colour )
 	end]]
 
 	self.sound:setPosition(startPos)

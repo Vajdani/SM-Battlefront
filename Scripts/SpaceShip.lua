@@ -1,7 +1,3 @@
----@class Collision
----@field scale Vec3
----@field getTransform function
-
 ---@class SpaceShip : HarvestableClass
 SpaceShip = class()
 SpaceShip.slowedSpeed = 20
@@ -25,15 +21,16 @@ SpaceShip.rotLerpSpeed = 2.5
 SpaceShip.rollLerpSpeed = 2.5
 SpaceShip.camLerpSpeed = 15
 
-SpaceShip.maxHealth = 100
+SpaceShip.maxHealth = 1000
 
 SpaceShip.fatalSpeedScale = 0.75
 
----@type Collision[]
 SpaceShip.collisionData = nil
-SpaceShip.effectData = nil
+SpaceShip.thrustEffectData = nil
+SpaceShip.boostEffectData = nil
 
 SpaceShip.destroyEffect = "PropaneTank - ExplosionBig"
+SpaceShip.name = "Default"
 
 dofile "$CONTENT_DATA/Scripts/util.lua"
 
@@ -47,9 +44,9 @@ local vec3_getrot = sm.vec3.getRotation
 function SpaceShip:server_onCreate()
     self.sv_beInSpace = false
     self.sv_controls = self:getDefaultControls()
-    self.speed = 0
-    self.stamina = self.maxStamina
-    self.blockBoost = false
+    self.sv_speed = 0
+    self.sv_stamina = self.maxStamina
+    self.sv_blockBoost = false
     self.stunned = false
     self.dir = { x = 0, y = 0, z = 0 }
 
@@ -65,7 +62,7 @@ function SpaceShip:server_onCreate()
     self.health = self.maxHealth
     self.harvestable.publicData = {
         health = self.health, maxHealth = self.maxHealth,
-        stamina = self.stamina, maxStamina = self.maxStamina
+        stamina = self.sv_stamina, maxStamina = self.maxStamina
     }
 
     self.colTriggers = {}
@@ -123,16 +120,16 @@ function SpaceShip:sv_handleCollision(obj, normal)
     local _type = type(obj)
     if _type == "Character" or _type == "Shape" and (obj:getBoundingBox() * 4):length() < 16 then return false end
 
-    local speedScale = self.speed / self.heavyBoost
+    local speedScale = self.sv_speed / self.heavyBoost
     if speedScale >= self.fatalSpeedScale then
-        self:sv_onDeath()
+        self:sv_onDeath(DAMAGESOURCE.collision)
     else
-        self:sv_takeDamage(self.velocity:length() * 10, "collision")
+        self:sv_takeDamage(self.velocity:length() * 10, DAMAGESOURCE.collision)
     end
 
     if self.sv_beInSpace then
         self.stunned = true
-        self.speed = 0
+        self.sv_speed = 0
         self.knockback = normal * 50
 
         --self.angularVelocity = normal:cross(self.harvestable.worldRotation * VEC3_RIGHT)
@@ -154,7 +151,8 @@ function SpaceShip:sv_takeDamage(damage, source)
         damage = damage.damage
     end
 
-    self.health = self.health - damage
+    self.health = math.max(self.health - damage, 0)
+	print(string.format("SpaceShip['%s'] %s took %s damage, current health: %s / %s", self.name, self.harvestable.id, damage, self.health, self.maxHealth))
     self.harvestable.publicData.health = self.health
 
     if self.health <= 0 then
@@ -164,19 +162,25 @@ function SpaceShip:sv_takeDamage(damage, source)
     end
 end
 
+local DETONATE = {
+    [DAMAGESOURCE.collision] = true,
+    [DAMAGESOURCE.bomb] = true,
+}
 function SpaceShip:sv_onDeath(source)
-    --if source == DAMAGESOURCE.collision then
+    if not self.sv_beInSpace or DETONATE[source] == true then
 	    sm.physics.explode( self.harvestable.worldPosition, 10, 5, 10, 100, "PropaneTank - ExplosionBig" )
-        --sm.effect.playEffect("PropaneTank - ExplosionBig", self.harvestable.worldPosition)
-    --end
 
-    local char = self.harvestable:getSeatCharacter()
-    self.harvestable:destroy()
+        local char = self.harvestable:getSeatCharacter()
+        self.harvestable:destroy()
 
-    if char then
-        local player = char:getPlayer()
-        sm.event.sendToPlayer(player, "sv_setSpaceShip", nil)
-        sm.event.sendToPlayer(player, "sv_takeDamage", 101)
+        if char then
+            local player = char:getPlayer()
+            sm.event.sendToPlayer(player, "sv_setSpaceShip", nil)
+            sm.event.sendToPlayer(player, "sv_takeDamage", 101)
+        end
+    else
+        print("lost control")
+        self.harvestable:destroy()
     end
 end
 
@@ -219,52 +223,55 @@ function SpaceShip:server_onFixedUpdate(dt)
             self.sv_beInSpace = self.nextInSpace
             self.network:setClientData(self.sv_beInSpace, 1)
         end
-    elseif char and self.sv_beInSpace then
-        if self.stunned then
-            self.harvestable:setPosition(vec3_lerp(pos, pos + self.knockback * dt, dt * self.posLerpSpeed))
-            --self.harvestable:setRotation(quat_slerp(rot, rot * angleAxis(math.rad(5), self.angularVelocity), dt * self.posLerpSpeed))
+    elseif char then
+        local canBoost
+        if self.sv_beInSpace then
+            if self.stunned then
+                self.harvestable:setPosition(vec3_lerp(pos, pos + self.knockback * dt, dt * self.posLerpSpeed))
+                --self.harvestable:setRotation(quat_slerp(rot, rot * angleAxis(math.rad(5), self.angularVelocity), dt * self.posLerpSpeed))
 
-            self.knockback = self.knockback - self.knockback * dt * 10
-            --self.angularVelocity = self.angularVelocity - self.angularVelocity * dt * 10
-            if self.knockback:length() <= 1 then
-                self.stunned = false
-            end
-        else
-            local speed = self.cruiseSpeed
-            local canBoost = self.sv_controls[5] and not self.blockBoost
-            if self.sv_controls[3] then
-                if canBoost then
-                    self.stamina = clamp(self.stamina - dt * self.staminaDrain, 0, self.maxStamina)
-                    if self.stamina > 0 then
-                        speed = self.heavyBoost
-                    else
-                        self.blockBoost = true
-                    end
-                else
-                    if self.stamina >= self.maxStamina * self.boostThreshold then
-                        self.blockBoost = false
-                    end
-
-                    speed = self.lightBoost
+                self.knockback = self.knockback - self.knockback * dt * 10
+                --self.angularVelocity = self.angularVelocity - self.angularVelocity * dt * 10
+                if self.knockback:length() <= 1 then
+                    self.stunned = false
                 end
-            elseif self.sv_controls[4] then
-                speed = self.slowedSpeed
+            else
+                local speed = self.cruiseSpeed
+                canBoost = self.sv_controls[5] and not self.sv_blockBoost
+                if self.sv_controls[3] then
+                    if canBoost then
+                        self.sv_stamina = clamp(self.sv_stamina - dt * self.staminaDrain, 0, self.maxStamina)
+                        if self.sv_stamina > 0 then
+                            speed = self.heavyBoost
+                        else
+                            self.sv_blockBoost = true
+                        end
+                    else
+                        if self.sv_stamina >= self.maxStamina * self.boostThreshold then
+                            self.sv_blockBoost = false
+                        end
+
+                        speed = self.lightBoost
+                    end
+                elseif self.sv_controls[4] then
+                    speed = self.slowedSpeed
+                end
+
+                self.sv_speed = sm.util.lerp(self.sv_speed, speed, dt * self.acceleration)
+                self.harvestable.publicData.stamina = self.sv_stamina
+
+                local newPos = pos + rot * VEC3_UP * round(self.sv_speed) * dt
+                self.harvestable:setPosition(vec3_lerp(pos, newPos, dt * self.posLerpSpeed))
+
+                local norm_x, norm_y = self:clampTurnDir(self.dir.x, self.dir.y)
+                self.dir.z = sm.util.lerp(self.dir.z, bVal(self.sv_controls[2]) - bVal(self.sv_controls[1]), dt * self.rollLerpSpeed)
+                local charDir = angleAxis(norm_x, VEC3_FWD) * angleAxis(norm_y, VEC3_RIGHT) * angleAxis(math.rad(self.dir.z * self.rollSpeed), VEC3_UP)
+                self.harvestable:setRotation(quat_slerp(rot, rot * charDir, dt * self.rotLerpSpeed))
             end
+        end
 
-            self.speed = sm.util.lerp(self.speed, speed, dt * self.acceleration)
-
-            if not canBoost then
-                self.stamina = clamp(self.stamina + dt * self.staminaGain, 0, self.maxStamina)
-            end
-            self.harvestable.publicData.stamina = self.stamina
-
-            local newPos = pos + rot * VEC3_UP * round(self.speed) * dt
-            self.harvestable:setPosition(vec3_lerp(pos, newPos, dt * self.posLerpSpeed))
-
-            local norm_x, norm_y = self:clampTurnDir(self.dir.x, self.dir.y)
-            self.dir.z = sm.util.lerp(self.dir.z, bVal(self.sv_controls[2]) - bVal(self.sv_controls[1]), dt * self.rollLerpSpeed)
-            local charDir = angleAxis(norm_x, VEC3_FWD) * angleAxis(norm_y, VEC3_RIGHT) * angleAxis(math.rad(self.dir.z * self.rollSpeed), VEC3_UP)
-            self.harvestable:setRotation(quat_slerp(rot, rot * charDir, dt * self.rotLerpSpeed))
+        if not canBoost then
+            self.sv_stamina = clamp(self.sv_stamina + dt * self.staminaGain, 0, self.maxStamina)
         end
     end
 
@@ -299,20 +306,20 @@ function SpaceShip:sv_seat(args, player)
 end
 
 function SpaceShip:sv_updateControls(controls, player)
-    if not self:verifyPacket(player) then return end
+    --if not self:verifyPacket(player) then return end
 
     self.sv_controls = controls
 end
 
 function SpaceShip:sv_updateDir(dir, player)
-    if not self:verifyPacket(player) --[[or not self.sv_beInSpace or not self.nextInSpace]] then return end
+    --if not self:verifyPacket(player) --[[or not self.sv_beInSpace or not self.nextInSpace]] then return end
 
     self.dir.x = clamp(self.dir.x + dir.x, -self.turnLimit, self.turnLimit)
     self.dir.y = clamp(self.dir.y - dir.y, -self.turnLimit, self.turnLimit)
 end
 
 function SpaceShip:sv_takeOff(state, player)
-    if not self:verifyPacket(player) or self.flyTo.endPos then return false end
+    if --[[not self:verifyPacket(player) or]] self.flyTo.endPos then return false end
 
     local nextInSpace
     if state ~= nil then
@@ -359,7 +366,7 @@ function SpaceShip:sv_takeOff(state, player)
             progress = 0
         }
 
-        self.speed = 0
+        self.sv_speed = 0
         --self.dir = { x = 0, y = 0, z = 0 }
         self.sv_controls = self:getDefaultControls()
     end
@@ -375,6 +382,9 @@ function SpaceShip:client_onCreate()
     self.cl_controls = self:getDefaultControls()
     self.cl_beInSpace = false
     self.cl_dir = { x = 0, y = 0 }
+    self.cl_speed = 0
+    self.cl_blockBoost = false
+    self.cl_stamina = self.maxStamina
     self.camMode = 2
 
     self.indicator = Line_indicator()
@@ -387,14 +397,23 @@ function SpaceShip:client_onCreate()
 	self.survivalHud:setVisible("WaterBar", false)
 
     self.thrustEffects = {}
-    if self.effectData then
+    if self.thrustEffectData then
         local rot = self.harvestable.worldRotation
-        for k, v in pairs(self.effectData) do
+        for k, v in pairs(self.thrustEffectData) do
             local effect = sm.effect.createEffect(v.effect, self.harvestable)
             local pos, _rot = v.getOffsets(rot)
             effect:setOffsetPosition(pos)
             effect:setOffsetRotation(_rot)
             self.thrustEffects[#self.thrustEffects+1] = effect
+        end
+    end
+
+    self.boostEffects = {}
+    if self.boostEffectData then
+        for k, v in pairs(self.boostEffectData) do
+            local effect = sm.effect.createEffect("Boost_line", self.harvestable)
+            effect:setOffsetPosition(v())
+            self.boostEffects[#self.boostEffects+1] = effect
         end
     end
 end
@@ -405,6 +424,9 @@ function SpaceShip:client_onDestroy()
     end
 
     self.indicator:destroy()
+    self.survivalHud:destroy()
+    self:cl_destroyEffects(self.thrustEffects)
+    self:cl_destroyEffects(self.boostEffects)
 end
 
 function SpaceShip:client_onClientDataUpdate(data, channel)
@@ -413,6 +435,10 @@ function SpaceShip:client_onClientDataUpdate(data, channel)
 
     if channel == 1 then
         self.cl_beInSpace = data
+
+        if not data then
+            self.cl_speed = 0
+        end
     elseif channel == 2 then
         self:cl_updateUI(data)
     end
@@ -428,9 +454,9 @@ function SpaceShip:client_onUpdate(dt)
     local playing = self.thrustEffects[1]:isPlaying()
     local shouldPlay = char and self.cl_beInSpace
     if shouldPlay and not playing then
-        self:cl_toggleThrustEffects(true)
+        self:cl_setEffectsState(self.thrustEffects, true)
     elseif not shouldPlay and playing then
-        self:cl_toggleThrustEffects(false)
+        self:cl_setEffectsState(self.thrustEffects, false)
     end
 
     if not char or char:getPlayer() ~= sm.localPlayer.getPlayer() then
@@ -439,16 +465,25 @@ function SpaceShip:client_onUpdate(dt)
     end
 
     local lerpSpeed = dt * self.camLerpSpeed
+    local shipSpeed = round(self.cl_speed)
     local camPos, camRot = cam.getPosition(), cam.getRotation()
     local newPos, newRot, pos, rot, fwd, up, shipRot = self:getCamTransForm(camPos, camRot, dt)
     cam.setPosition(newPos)
     cam.setRotation(newRot)
-    cam.setFov(sm.util.lerp(sm.camera.getFov(), cam.getDefaultFov() * (1 + (self.speed / self.heavyBoost) * 0.25), lerpSpeed))
+    cam.setFov(sm.util.lerp(sm.camera.getFov(), cam.getDefaultFov() * (1 + (shipSpeed / self.heavyBoost) * 0.25), lerpSpeed))
+
+    local displayBoost = self.cl_controls[5] and shipSpeed > self.lightBoost
+    local boostDisplayed = self.boostEffects[1]:isPlaying()
+    if displayBoost and not boostDisplayed then
+        self:cl_setEffectsState(self.boostEffects, true)
+    elseif not displayBoost and boostDisplayed then
+        self:cl_setEffectsState(self.boostEffects, false)
+    end
 
     local norm_x, norm_y = self:clampTurnDir(self.cl_dir.x, self.cl_dir.y)
     local camFwd = cam.getDirection()
     local charDir = angleAxis(norm_x, up) * angleAxis(norm_y, rot * VEC3_RIGHT) * camFwd
-    local mul = 1
+    local mul = 2
     self.indicator:update(newPos + camFwd * mul, newPos + charDir * mul, newRot)
 end
 
@@ -469,6 +504,37 @@ function SpaceShip:client_onFixedUpdate(dt)
         self.cl_dir.x = clamp(self.cl_dir.x + x, -self.turnLimit, self.turnLimit)
         self.cl_dir.y = clamp(self.cl_dir.y - y, -self.turnLimit, self.turnLimit)
     end
+
+    local canBoost
+    if self.cl_beInSpace then
+        local speed = self.cruiseSpeed
+        canBoost = self.cl_controls[5] and not self.cl_blockBoost
+        if self.cl_controls[3] then
+            if canBoost then
+                self.cl_stamina = clamp(self.cl_stamina - dt * self.staminaDrain, 0, self.maxStamina)
+                if self.cl_stamina > 0 then
+                    speed = self.heavyBoost
+                else
+                    self.cl_blockBoost = true
+                end
+            else
+                if self.cl_stamina >= self.maxStamina * self.boostThreshold then
+                    self.cl_blockBoost = false
+                end
+
+                speed = self.lightBoost
+            end
+        elseif self.cl_controls[4] then
+            speed = self.slowedSpeed
+        end
+
+        self.cl_speed = sm.util.lerp(self.cl_speed, speed, dt * self.acceleration)
+    end
+
+    if not canBoost then
+        self.cl_stamina = clamp(self.cl_stamina + dt * self.staminaGain, 0, self.maxStamina)
+    end
+    self.survivalHud:setSliderData( "Food", self.maxStamina * 100, self.cl_stamina * 100 )
 
     return char
 end
@@ -528,8 +594,8 @@ function SpaceShip:cl_seat(data)
     end
 end
 
-function SpaceShip:cl_toggleThrustEffects(state)
-    for k, v in pairs(self.thrustEffects) do
+function SpaceShip:cl_setEffectsState(effects, state)
+    for k, v in pairs(effects) do
         if state then
             v:start()
         else
@@ -538,14 +604,24 @@ function SpaceShip:cl_toggleThrustEffects(state)
     end
 end
 
+function SpaceShip:cl_destroyEffects(effects)
+    for k, v in pairs(effects) do
+        v:destroy()
+    end
+end
+
 
 
 function SpaceShip:getDefaultControls()
     return {
-        false, false, false, false,
-        [5] = false,
-        [7] = false,
-        [8] = false,
+        [1] = false, --A
+        [2] = false, --D
+        [3] = false, --W
+        [4] = false, --S
+        [5] = false, --1 - Boost
+                     --2 - Change Cam
+        [7] = false, --3 - Primary
+        [8] = false, --4 - Secondary
     }
 end
 
@@ -587,28 +663,15 @@ end
 
 ---@class Fighter : SpaceShip
 Fighter = class(SpaceShip)
+Fighter.name = "Fighter"
 Fighter.ammo = 10
 Fighter.primaryCooldownTicks = 10
 
 Fighter.aimAssistDistance = 250
 Fighter.aimAssistRadius = 1
 
-function Fighter:server_onCreate()
-    SpaceShip.server_onCreate(self)
-
-    self.sv_primaryTimer = Timer()
-    self.sv_primaryTimer:start(self.primaryCooldownTicks)
-    self.sv_primaryTimer.count = self.sv_primaryTimer.ticks
-end
-
-function Fighter:server_onFixedUpdate(dt)
-    self.sv_primaryTimer:tick()
-    SpaceShip.server_onFixedUpdate(self, dt)
-end
-
 function Fighter:sv_fireProjectile(args, player)
-    if not self:verifyPacket(player) or not self.sv_primaryTimer:done() then return end
-    self.sv_primaryTimer:reset()
+    --if not self:verifyPacket(player) then return end
 
     local pos = args.pos
     sm.event.sendToTool(
@@ -628,9 +691,9 @@ end
 function Fighter:client_onCreate()
     SpaceShip.client_onCreate(self)
 
-    self.cl_primaryTimer = Timer()
-    self.cl_primaryTimer:start(self.primaryCooldownTicks)
-    self.cl_primaryTimer.count = self.cl_primaryTimer.ticks
+    self.primaryTimer = Timer()
+    self.primaryTimer:start(self.primaryCooldownTicks)
+    self.primaryTimer.count = self.primaryTimer.ticks
 
     self.primaryCounter = 0
 end
@@ -639,10 +702,10 @@ function Fighter:client_onFixedUpdate(dt)
     local char = SpaceShip.client_onFixedUpdate(self, dt)
     if not char then return end
 
-    self.cl_primaryTimer:tick()
+    self.primaryTimer:tick()
     if self.cl_beInSpace or true then
         if self.cl_controls[7] then
-            if self.cl_primaryTimer:done() then
+            if self.primaryTimer:done() then
                 local dir, right, up = cam.getDirection(), cam.getRight(), cam.getUp()
                 local firePos = self:getFirePos(dir, right, up)
                 local hit, result = sm.physics.spherecast(
@@ -657,7 +720,7 @@ function Fighter:client_onFixedUpdate(dt)
 
                 self.network:sendToServer("sv_fireProjectile", { pos = firePos, dir = dir, char = char })
 
-                self.cl_primaryTimer:reset()
+                self.primaryTimer:reset()
                 self.primaryCounter = self.primaryCounter + 1
             end
         else
@@ -680,14 +743,17 @@ end
 
 ---@class Bomber : SpaceShip
 Bomber = class(SpaceShip)
+Bomber.name = "Bomber"
 
 ---@class Carrier : SpaceShip
 Carrier = class(SpaceShip)
+Carrier.name = "Carrier"
 
 
 
 ---@class TieFighter : Fighter
 TieFighter = class(Fighter)
+TieFighter.name = "Tie Fighter"
 TieFighter.collisionData = {
     {
         scale = sm.vec3.new(0.25, 3.75, 5),
@@ -708,7 +774,7 @@ TieFighter.collisionData = {
         end
     }
 }
-TieFighter.effectData = {
+TieFighter.thrustEffectData = {
     {
         effect = "Thruster - Level 5",
         getOffsets = function(rot)
@@ -721,6 +787,12 @@ TieFighter.effectData = {
             return (-VEC3_RIGHT - VEC3_UP) * 0.5, vec3_getrot(VEC3_UP, VEC3_UP * -1)
         end
     }
+}
+TieFighter.boostEffectData = {
+    function() return VEC3_RIGHT *  2 + (VEC3_FWD - VEC3_UP) * 2.5 end,
+    function() return VEC3_RIGHT * -2 + (VEC3_FWD - VEC3_UP) * 2.5 end,
+    function() return VEC3_RIGHT *  2 - (VEC3_FWD + VEC3_UP) * 2.5 end,
+    function() return VEC3_RIGHT * -2 - (VEC3_FWD + VEC3_UP) * 2.5 end,
 }
 
 function TieFighter:getExitPos()

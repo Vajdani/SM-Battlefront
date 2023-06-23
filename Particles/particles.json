@@ -1,5 +1,6 @@
 {
    "particleSystemList" : [
-      "cutter_block_destroy.json"
+      "beam_impact.json",
+      "wing_boost_line.json"
    ]
 }
