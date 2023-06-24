@@ -22,6 +22,7 @@ SpaceShip.rollLerpSpeed = 2.5
 SpaceShip.camLerpSpeed = 15
 
 SpaceShip.maxHealth = 1000
+SpaceShip.healthRegen = false
 
 SpaceShip.fatalSpeedScale = 0.75
 
@@ -153,7 +154,9 @@ function SpaceShip:sv_takeDamage(damage, source)
 
     self.health = math.max(self.health - damage, 0)
 	print(string.format("SpaceShip['%s'] %s took %s damage, current health: %s / %s", self.name, self.harvestable.id, damage, self.health, self.maxHealth))
-    self.harvestable.publicData.health = self.health
+    if sm.exists(self.harvestable) then
+        self.harvestable.publicData.health = self.health
+    end
 
     if self.health <= 0 then
         self:sv_onDeath(source)
@@ -387,14 +390,20 @@ function SpaceShip:client_onCreate()
     self.cl_stamina = self.maxStamina
     self.camMode = 2
 
-    self.indicator = Line_indicator()
-    self.indicator:init(0.05, sm.color.new(0,1,0))
+    local col = sm.color.new(1,1,1)
+    --self.indicator = Line_indicator()
+    --self.indicator:init(0.05, col)
+    self.crosshair = sm.effect.createEffect("ShapeRenderable")
+    self.crosshair:setParameter("uuid", sm.uuid.new("ae27acb9-3eff-4530-bd4d-a8c3396430f5"))
+    self.crosshair:setParameter("color", col)
+    self.crosshair:setScale(sm.vec3.new(0.035, 0.01, 0.035))
 
     self.lastPos = self.harvestable.worldPosition
     self.velocity = VEC3_ZERO
 
     self.survivalHud = sm.gui.createSurvivalHudGui()
 	self.survivalHud:setVisible("WaterBar", false)
+    self.hotbar = sm.gui.createSeatGui(false)
 
     self.thrustEffects = {}
     if self.thrustEffectData then
@@ -421,10 +430,13 @@ end
 function SpaceShip:client_onDestroy()
     if g_spaceShip == self.harvestable then
         self:cl_seat()
+        sm.event.sendToPlayer(sm.localPlayer.getPlayer(), "cl_setUIState", true)
     end
 
-    self.indicator:destroy()
+    --self.indicator:destroy()
+    self.crosshair:destroy()
     self.survivalHud:destroy()
+    self.hotbar:destroy()
     self:cl_destroyEffects(self.thrustEffects)
     self:cl_destroyEffects(self.boostEffects)
 end
@@ -459,9 +471,11 @@ function SpaceShip:client_onUpdate(dt)
         self:cl_setEffectsState(self.thrustEffects, false)
     end
 
-    if not char or char:getPlayer() ~= sm.localPlayer.getPlayer() then
-        self.indicator:stop()
-        return
+    local isLocal = char and char:getPlayer() == sm.localPlayer.getPlayer()
+    if not isLocal then
+        --self.indicator:stop()
+        self.crosshair:stop()
+        return char, isLocal
     end
 
     local lerpSpeed = dt * self.camLerpSpeed
@@ -483,8 +497,13 @@ function SpaceShip:client_onUpdate(dt)
     local norm_x, norm_y = self:clampTurnDir(self.cl_dir.x, self.cl_dir.y)
     local camFwd = cam.getDirection()
     local charDir = angleAxis(norm_x, up) * angleAxis(norm_y, rot * VEC3_RIGHT) * camFwd
-    local mul = 2
-    self.indicator:update(newPos + camFwd * mul, newPos + charDir * mul, newRot)
+    --self.indicator:update(newPos + camFwd, newPos + charDir, newRot)
+    local crosshair = newPos + charDir
+    self.crosshair:setPosition(crosshair)
+    self.crosshair:setRotation(newRot)
+    self.crosshair:start()
+
+    return char, isLocal
 end
 
 function SpaceShip:client_onFixedUpdate(dt)
@@ -493,8 +512,9 @@ function SpaceShip:client_onFixedUpdate(dt)
     self.lastPos = pos
 
     local char = self.harvestable:getSeatCharacter()
-    if not char or char:getPlayer() ~= sm.localPlayer.getPlayer() then
-        return char
+    local isLocal = char and char:getPlayer() == sm.localPlayer.getPlayer()
+    if not isLocal then
+        return char, isLocal
     end
 
     local x, y = sm.localPlayer.getMouseDelta()
@@ -536,7 +556,7 @@ function SpaceShip:client_onFixedUpdate(dt)
     end
     self.survivalHud:setSliderData( "Food", self.maxStamina * 100, self.cl_stamina * 100 )
 
-    return char
+    return char, isLocal
 end
 
 function SpaceShip:client_canInteract()
@@ -586,10 +606,12 @@ function SpaceShip:cl_seat(data)
         g_spaceShip = self.harvestable
         self:cl_updateUI(data)
         self.survivalHud:open()
+        self.hotbar:open()
     else
         g_spaceShip = nil
         cam.setCameraState(0)
         self.survivalHud:close()
+        self.hotbar:close()
         self.cl_controls = self:getDefaultControls()
     end
 end
@@ -664,8 +686,16 @@ end
 ---@class Fighter : SpaceShip
 Fighter = class(SpaceShip)
 Fighter.name = "Fighter"
-Fighter.ammo = 10
+
+Fighter.maxPrimaryAmmo = 20
+Fighter.primaryRechargeTicks = 8
 Fighter.primaryCooldownTicks = 10
+Fighter.primaryProjectile = PROJECTILE["default_primary"]
+
+Fighter.maxSecondaryAmmo = 4
+Fighter.secondaryRechargeTicks = 60
+Fighter.secondaryCooldownTicks = 20
+Fighter.secondaryProjectile = PROJECTILE["default_secondary"]
 
 Fighter.aimAssistDistance = 250
 Fighter.aimAssistRadius = 1
@@ -680,7 +710,8 @@ function Fighter:sv_fireProjectile(args, player)
         {
             pos = pos,
             dir = args.dir,
-            owner = args.char
+            properties = args.projectile,
+            owner = args.owner
         }
     )
     sm.effect.playEffect("Beam_shoot", pos)
@@ -694,49 +725,131 @@ function Fighter:client_onCreate()
     self.primaryTimer = Timer()
     self.primaryTimer:start(self.primaryCooldownTicks)
     self.primaryTimer.count = self.primaryTimer.ticks
+    self.primaryRechargeTimer = Timer()
+    self.primaryRechargeTimer:start(self.primaryRechargeTicks)
+    self.primaryAmmo = self.maxPrimaryAmmo
+    self.canFirePrimary = true
+
+    self.secondaryTimer = Timer()
+    self.secondaryTimer:start(self.secondaryCooldownTicks)
+    self.secondaryTimer.count = self.secondaryTimer.ticks
+    self.secondaryRechargeTimer = Timer()
+    self.secondaryRechargeTimer:start(self.secondaryRechargeTicks)
+    self.secondaryAmmo = self.maxSecondaryAmmo
+    self.canFireSecondary = true
 
     self.primaryCounter = 0
 end
 
 function Fighter:client_onFixedUpdate(dt)
-    local char = SpaceShip.client_onFixedUpdate(self, dt)
-    if not char then return end
+    local char, isLocal = SpaceShip.client_onFixedUpdate(self, dt)
+    if not isLocal then return end
 
     self.primaryTimer:tick()
-    if self.cl_beInSpace or true then
-        if self.cl_controls[7] then
-            if self.primaryTimer:done() then
-                local dir, right, up = cam.getDirection(), cam.getRight(), cam.getUp()
-                local firePos = self:getFirePos(dir, right, up)
-                local hit, result = sm.physics.spherecast(
-                    firePos, firePos + dir * self.aimAssistDistance,
-                    self.aimAssistRadius, self.harvestable,
-                    PROJECTILERAYCASTFILTER
-                )
+    self.secondaryTimer:tick()
 
-                if hit then
-                    dir = (result.pointWorld - firePos):normalize()
-                end
+    local primary, secondary = self.cl_controls[7], self.cl_controls[8]
+    local canFirePrimary = primary and self.primaryTimer:done() and self.canFirePrimary
+    local canFireSecondary = secondary and self.secondaryTimer:done() and self.canFireSecondary
+    if self.cl_beInSpace then
+        if canFirePrimary then
+            local dir, right, up = cam.getDirection(), cam.getRight(), cam.getUp()
+            local firePos = self:getPrimaryFirePos(dir, right, up)
+            local camPos = cam.getPosition() + self.velocity
+            local hit, result = sm.physics.spherecast(
+                camPos, camPos + dir * self.aimAssistDistance,
+                self.aimAssistRadius, self.harvestable,
+                PROJECTILERAYCASTFILTER
+            )
 
-                self.network:sendToServer("sv_fireProjectile", { pos = firePos, dir = dir, char = char })
-
-                self.primaryTimer:reset()
-                self.primaryCounter = self.primaryCounter + 1
+            if hit then
+                dir = (result.pointWorld - firePos):normalize()
             end
-        else
-            --self.primaryCounter = 0
+
+            self.network:sendToServer(
+                "sv_fireProjectile",
+                {
+                    pos = firePos, dir = dir,
+                    owner = self.harvestable, projectile = self.primaryProjectile
+                }
+            )
+
+            self.primaryTimer:reset()
+            self.primaryAmmo = self.primaryAmmo - 1
+            self.canFirePrimary = self.primaryAmmo > 0
+
+            self.primaryCounter = self.primaryCounter + 1
         end
 
-        if self.cl_controls[8] then
-            print("pow")
+        if canFireSecondary then
+            local dir, right, up = cam.getDirection(), cam.getRight(), cam.getUp()
+            local firePos = self:getSecondaryFirePos(dir, right, up)
+
+            self.network:sendToServer(
+                "sv_fireProjectile",
+                {
+                    pos = firePos, dir = dir,
+                    owner = self.harvestable, projectile = self.secondaryProjectile
+                }
+            )
+
+            self.secondaryTimer:reset()
+            self.secondaryAmmo = self.secondaryAmmo - 1
+            self.canFireSecondary = self.secondaryAmmo > 0
+        end
+    end
+
+    if not primary or not self.canFirePrimary then
+        self.primaryRechargeTimer:tick()
+        if self.primaryRechargeTimer:done() then
+            self.primaryRechargeTimer:reset()
+            self.primaryAmmo = sm.util.clamp(self.primaryAmmo + 1, 0, self.maxPrimaryAmmo)
+
+            if self.primaryAmmo >= self.maxPrimaryAmmo then
+                self.canFirePrimary = true
+            end
+        end
+    end
+
+    if not secondary or not self.canFireSecondary then
+        self.secondaryRechargeTimer:tick()
+        if self.secondaryRechargeTimer:done() then
+            self.secondaryRechargeTimer:reset()
+            self.secondaryAmmo = sm.util.clamp(self.secondaryAmmo + 1, 0, self.maxSecondaryAmmo)
+
+            if self.secondaryAmmo >= self.maxSecondaryAmmo then
+                self.canFireSecondary = true
+            end
         end
     end
 end
 
+function Fighter:client_onUpdate(dt)
+    local char, isLocal = SpaceShip.client_onUpdate(self, dt)
+    if not isLocal then return end
+
+    self:displayAmmo()
+end
 
 
-function Fighter:getFirePos(fwd, right, up)
-    return self.harvestable.worldPosition + self.harvestable.worldRotation * VEC3_UP
+
+function Fighter:getPrimaryFirePos(fwd, right, up)
+    return self.harvestable.worldPosition + self.harvestable.worldRotation * VEC3_UP + self.velocity
+end
+
+function Fighter:getSecondaryFirePos(fwd, right, up)
+    return self:getPrimaryFirePos(fwd, right, up)
+end
+
+function Fighter:displayAmmo()
+    local max = self.maxPrimaryAmmo
+    local fraction = (max - self.primaryAmmo)/max
+    sm.gui.setProgressFraction(fraction)
+
+    if not self.canFirePrimary then
+        local col = ColourLerp(COLOR_WHITE, COLOR_OVERHEAT, fraction)
+        sm.gui.displayAlertText(string.format("#%sOVERHEATED!", col:getHexStr():sub(1,6)), 1)
+    end
 end
 
 
@@ -754,6 +867,7 @@ Carrier.name = "Carrier"
 ---@class TieFighter : Fighter
 TieFighter = class(Fighter)
 TieFighter.name = "Tie Fighter"
+TieFighter.primaryProjectile = PROJECTILE["TieFighter_primary"]
 TieFighter.collisionData = {
     {
         scale = sm.vec3.new(0.25, 3.75, 5),
@@ -815,21 +929,22 @@ function TieFighter:getCamTransForm(camPos, camRot, dt)
         local distance = camDir:length()
         if self.cl_beInSpace then
             if distance > 5 then
-                self.camPos = pos - camDir:normalize() * 4 + up
+                self.camPos = pos - camDir:normalize() * 4 + up * 2
             end
         else
             self.camPos = pos - fwd * 5 + up * 2
         end
 
         newPos = dt and vec3_lerp(camPos, self.camPos, dt * (distance / 6.25) * 3 ) or self.camPos
-        local lookAt = pos + fwd * 10
-        newRot = dt and nlerp(camRot, LookRot(lookAt - self.camPos, up) * ROTADJUST, lerpSpeed) or  LookRot(lookAt - self.camPos, up) * ROTADJUST
+        --local lookAt = pos + fwd * 10
+        --newRot = dt and nlerp(camRot, LookRot(lookAt - self.camPos, up) * ROTADJUST, lerpSpeed) or  LookRot(lookAt - self.camPos, up) * ROTADJUST
+        newRot = dt and nlerp(camRot, shipRot, lerpSpeed) or shipRot
     end
 
     return newPos, newRot, pos, rot, fwd, up, shipRot
 end
 
-function TieFighter:getFirePos(fwd, right, up)
+function TieFighter:getPrimaryFirePos(fwd, right, up)
     local origin = self.harvestable.worldPosition + self.harvestable.worldRotation * VEC3_UP + self.velocity
     return origin - up + right * (self.primaryCounter%2 == 0 and 1 or -1) * 0.75
 end

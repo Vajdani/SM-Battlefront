@@ -82,6 +82,28 @@
          "rotationSet" : "PropY",
          "sticky" : "-Y+Y",
          "uuid" : "6ab9cd3f-2a8c-48d8-ac1a-514f87927604"
+      },
+      {
+         "color" : "ee9e28",
+         "cylinder" : {
+            "axis" : "Y",
+            "depth" : 1,
+            "diameter" : 3,
+            "margin" : 0.040
+         },
+         "flammable" : false,
+         "name" : "obj_ui_crosshair",
+         "physicsMaterial" : "Metal",
+         "ratings" : {
+            "buoyancy" : 1,
+            "density" : 5,
+            "durability" : 4,
+            "friction" : 3
+         },
+         "renderable" : "$CONTENT_DATA/Objects/Renderables/obj_ui_crosshair.rend",
+         "rotationSet" : "PropY",
+         "sticky" : "-Y+Y",
+         "uuid" : "ae27acb9-3eff-4530-bd4d-a8c3396430f5"
       }
    ]
 }

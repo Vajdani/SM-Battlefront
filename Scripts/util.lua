@@ -6,6 +6,8 @@ VEC3_ONE = sm.vec3.one()
 VEC3_ZERO = sm.vec3.zero()
 ROTADJUST = sm.quat.angleAxis(math.rad(90), VEC3_RIGHT) * sm.quat.angleAxis(math.rad(180), VEC3_FWD)
 QUAT_ZERO = sm.quat.identity()
+COLOR_WHITE = sm.color.new(1,1,1)
+COLOR_OVERHEAT = sm.color.new("#ff7f00")
 
 LANDABLESURFACES = {
     terrainSurface = true,
@@ -24,9 +26,80 @@ DAMAGESOURCE = {
     melee = 6
 }
 
+PROJECTILE = {
+    ["default_primary"] = {
+        graphics = {
+            lineThickness = 1,
+            lineLength = 2.5,
+            lineColour = sm.color.new(1,1,1)
+        },
+        speed = 100,
+        directDamage = 100,
+        explosionStats = {},
+        hasGravity = false,
+        type = DAMAGESOURCE.genericProjectile
+    },
+    ["default_secondary"] = {
+        graphics = {
+            lineThickness = 1,
+            lineLength = 2.5,
+            lineColour = sm.color.new(0.5,0.5,0.5)
+        },
+        speed = 250,
+        directDamage = 250,
+        explosionStats = {
+            level = 5,
+            destructionRadius = 5,
+            impulseRadius = 10,
+            magnitude = 50,
+            effect = "PropaneTank - ExplosionSmall"
+        },
+        hasGravity = false,
+        type = DAMAGESOURCE.genericProjectile
+    },
+    ["TieFighter_primary"] = {
+        graphics = {
+            lineThickness = 1,
+            lineLength = 2.5,
+            lineColour = sm.color.new(0,1,0)
+        },
+        speed = 250,
+        directDamage = 250,
+        explosionStats = {},
+        hasGravity = false,
+        type = DAMAGESOURCE.genericProjectile
+    },
+    ["gravityTest"] = {
+        graphics = {
+            lineThickness = 1,
+            lineLength = 2.5,
+            lineColour = sm.color.new(1,0,0)
+        },
+        speed = 250,
+        directDamage = 250,
+        explosionStats = {
+            level = 5,
+            destructionRadius = 5,
+            impulseRadius = 10,
+            magnitude = 50,
+            effect = "PropaneTank - ExplosionSmall"
+        },
+        hasGravity = true,
+        type = DAMAGESOURCE.genericProjectile
+    }
+}
+
 function bVal(bool)
     return bool and 1 or 0
 end
+
+function ColourLerp(c1, c2, t)
+    local r = sm.util.lerp(c1.r, c2.r, t)
+    local g = sm.util.lerp(c1.g, c2.g, t)
+    local b = sm.util.lerp(c1.b, c2.b, t)
+    return sm.color.new(r,g,b)
+end
+
 
 
 -- #region Thanks Questionable Mark
