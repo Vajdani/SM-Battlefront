@@ -1,10 +1,12 @@
 {
    "lodList" : [
       {
-         "mesh" : "$CONTENT_DATA/Kinematics/Mesh/TieFighter.fbx",
+         "mesh" : "$CONTENT_DATA/Kinematics/Mesh/X-Wing_pose0.fbx",
+         "pose0" : "$CONTENT_DATA/Kinematics/Mesh/X-Wing_pose1.fbx",
+         "pose1" : "$CONTENT_DATA/Kinematics/Mesh/X-Wing_pose1.fbx",
          "subMeshList" : [
             {
-               "material" : "DifAsgNor",
+               "material" : "DifAsgNor_Pose2",
                "textureList" : [
                   "$GAME_DATA/Textures/Default/default_dif.tga",
                   "$GAME_DATA/Textures/Default/default_asg.tga",

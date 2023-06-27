@@ -29,32 +29,88 @@
 							}
 						},
 						{
+							"freeRotation": true,
 							"name": "LeftForeArm",
 							"offset": {
-								"x": 1.172,
-								"y": 0.968,
-								"z": 0.968
+								"x": 1.1720,
+								"y": 0.9680,
+								"z": 0.9680
 							},
-							"freeRotation": true,
 							"steers": true
 						},
 						{
+							"freeRotation": true,
 							"name": "RightForeArm",
 							"offset": {
-								"x": -1.172,
-								"y": 0.968,
-								"z": 0.968
+								"x": -1.1720,
+								"y": 0.9680,
+								"z": 0.9680
 							},
-							"freeRotation": true,
 							"steers": true
 						}
 					],
-					"ragdollFile": "$GAME_DATA/Character/seat_ragdoll.json",
 					"enterAudio": "Seat seated",
-					"exitAudio": "Seat unseated"
+					"exitAudio": "Seat unseated",
+					"ragdollFile": "$GAME_DATA/Character/seat_ragdoll.json"
 				}
 			},
 			"uuid": "45c52a91-cf19-4fc8-9e64-7b6f8078e68d"
+		},
+		{
+			"col": "$CONTENT_DATA/Kinematics/Mesh/XWing.obj",
+			"collides": {
+				"body": true,
+				"character": true,
+				"melee": true,
+				"projectile": true
+			},
+			"color": "eeeeee",
+			"mass": 10000.0,
+			"material": "Metal",
+			"name": "X-Wing",
+			"removable": false,
+			"renderable": "$CONTENT_DATA/Kinematics/Renderables/XWing.rend",
+			"script": {
+				"class": "XWing",
+				"data": {},
+				"file": "$CONTENT_DATA/Scripts/SpaceShip.lua",
+				"seat": {
+					"bones": [
+						{
+							"name": "Hips",
+							"offset": {
+								"x": 0.0,
+								"y": -0.314,
+								"z": -2.956
+							}
+						},
+						{
+							"freeRotation": true,
+							"name": "LeftForeArm",
+							"offset": {
+								"x": 1.1720,
+								"y": 0.718,
+								"z": -2.532
+							},
+							"steers": true
+						},
+						{
+							"freeRotation": true,
+							"name": "RightForeArm",
+							"offset": {
+								"x": -1.1720,
+								"y": 0.718,
+								"z": -2.532
+							},
+							"steers": true
+						}
+					],
+					"enterAudio": "Seat seated",
+					"exitAudio": "Seat unseated",
+					"ragdollFile": "$GAME_DATA/Character/seat_ragdoll.json"
+				}
+			},
+			"uuid": "970d5247-9943-458a-bf48-de8a6cb089ee"
 		}
 	]
 }
