@@ -16,6 +16,7 @@ LANDABLESURFACES = {
 }
 LANDRAYCASTFILTER = sm.physics.filter.terrainAsset + sm.physics.filter.terrainSurface + sm.physics.filter.staticBody + sm.physics.filter.harvestable
 PROJECTILERAYCASTFILTER = sm.physics.filter.staticBody + sm.physics.filter.dynamicBody + sm.physics.filter.harvestable --+ sm.physics.filter.character
+CAMERAFILTER = sm.physics.filter.terrainAsset + sm.physics.filter.terrainSurface + sm.physics.filter.staticBody + sm.physics.filter.harvestable
 
 DAMAGESOURCE = {
     collision = 1,
