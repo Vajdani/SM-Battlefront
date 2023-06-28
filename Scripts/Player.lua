@@ -83,8 +83,8 @@ function Player:sv_place(ship, player)
     local hit, result = sm.physics.raycast(pos, pos - VEC3_UP * 10)
 
     local data = {
-        ["TIE Fighter"] = { uuid =  sm.uuid.new("45c52a91-cf19-4fc8-9e64-7b6f8078e68d"), landOffset = 2.54 },
-        ["X-Wing"] = { uuid = sm.uuid.new("970d5247-9943-458a-bf48-de8a6cb089ee"), landOffset = 0.9 }
+        ["TIE Fighter"] = { uuid =  sm.uuid.new("45c52a91-cf19-4fc8-9e64-7b6f8078e68d"), landOffset = 2.475 },
+        ["X-Wing"] = { uuid = sm.uuid.new("970d5247-9943-458a-bf48-de8a6cb089ee"), landOffset = 0.85 }
     }
     if hit then
         local normal = result.normalWorld
@@ -96,7 +96,7 @@ function Player:sv_place(ship, player)
         end
     end
 
-    sm.harvestable.create( data[ship].uuid, pos, rot )
+    sm.harvestable.create( data[ship].uuid, pos, rot * sm.quat.angleAxis(math.rad(180), VEC3_FWD) )
 end
 
 

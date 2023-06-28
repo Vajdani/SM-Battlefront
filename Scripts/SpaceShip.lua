@@ -662,6 +662,14 @@ function SpaceShip:client_onAction(action, state)
         cam.setRotation(rot)
     elseif action == 9 then
         self.network:sendToServer("sv_onDeath", DAMAGESOURCE.genericProjectile)
+    elseif action == 10 then
+        self.network:sendToServer(
+            "sv_takeDamage",
+            {
+                damage = self.maxHealth * 0.1,
+                source = DAMAGESOURCE.genericProjectile
+            }
+        )
     elseif action == 15 then
         self.network:sendToServer("sv_seat")
     elseif action == 16 then
@@ -741,10 +749,10 @@ function SpaceShip:getCamTransForm(camPos, camRot, dt)
 
     if dt then
         local lerpSpeed = dt * self.camLerpSpeed
-        return vec3_lerp(camPos, pos, lerpSpeed), nlerp(camRot, rot, lerpSpeed), pos, rot, fwd, up, shipRot
+        return vec3_lerp(camPos, pos, lerpSpeed), nlerp(camRot, shipRot, lerpSpeed), pos, rot, fwd, up, shipRot
     end
 
-    return pos, rot, pos, rot, fwd, up, shipRot
+    return pos, shipRot, pos, rot, fwd, up, shipRot
 end
 
 function SpaceShip:getExitPos()
@@ -999,16 +1007,17 @@ function TieFighter:getCamTransForm(camPos, camRot, dt)
         local camDir = pos - camPos
         local distance = camDir:length()
         if self.cl_beInSpace and self.cl_nextInSpace and not self.cl_stunned then
-            --if distance > 5 then
-                self.camPos = pos - camDir:normalize() * 5 + up * 2
-            --end
+            self.camPos = pos - camDir:normalize() * 5 + up * 2
         else
             self.camPos = pos - fwd * 5 + up * 2
         end
 
-        newPos = dt and vec3_lerp(camPos, self.camPos, dt * (distance / 6.25) * 3 ) or self.camPos
-        --local lookAt = pos + fwd * 10
-        --newRot = dt and nlerp(camRot, LookRot(lookAt - self.camPos, up) * ROTADJUST, lerpSpeed) or  LookRot(lookAt - self.camPos, up) * ROTADJUST
+        local hit, result = sm.physics.raycast(camPos, self.camPos)
+        if hit then
+            newPos = result.pointWorld + result.normalWorld * 0.5
+        else
+            newPos = dt and vec3_lerp(camPos, self.camPos, dt * (distance / 6.25) * 3 ) or self.camPos
+        end
     end
     newRot = dt and nlerp(camRot, shipRot, lerpSpeed) or shipRot
 
@@ -1104,22 +1113,20 @@ function XWing:getCamTransForm(camPos, camRot, dt)
         local nextPos = pos + up * 0.5 - fwd * 0.5 - self.velocity * 0.75
         newPos = dt and vec3_lerp(camPos, nextPos, lerpSpeed) or nextPos
     else
-        --[[
-        local nextPos = pos - fwd * 10 + up * 2
-        newPos = dt and vec3_lerp(camPos, nextPos, lerpSpeed) or nextPos
-        ]]
-
         local camDir = pos - camPos
         local distance = camDir:length()
         if self.cl_beInSpace and self.cl_nextInSpace and not self.cl_stunned then
-            --if distance > 10 then
-                self.camPos = pos - camDir:normalize() * 10 + up
-            --end
+            self.camPos = pos - camDir:normalize() * 10 + up
         else
             self.camPos = pos - fwd * 10 + up * 1.5
         end
 
-        newPos = dt and vec3_lerp(camPos, self.camPos, dt * (distance / 6.25) * 3 ) or self.camPos
+        local hit, result = sm.physics.raycast(camPos, self.camPos)
+        if hit then
+            newPos = result.pointWorld + result.normalWorld * 0.5
+        else
+            newPos = dt and vec3_lerp(camPos, self.camPos, dt * (distance / 6.25) * 3 ) or self.camPos
+        end
     end
     newRot = dt and nlerp(camRot, shipRot, lerpSpeed) or shipRot
 
