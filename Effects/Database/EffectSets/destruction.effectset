@@ -1,0 +1,154 @@
+{
+    "TieFighter_explode" : {
+		"maxInstances": 64,
+		"parameterList":
+		{
+			"size": 0.5,
+			"color": "ffcc34",
+			"radius": 20.0,
+			"intensity": 8.0,
+			"shakeStrength": 1,
+			"shakeRadius": 50.0
+		},
+		"parameterCurves":
+		{
+			"radius":
+			{
+				"timeline":
+				[
+					{ "time":0.0, "value":0.0 },
+					{ "time":0.1, "value":20.0 },
+					{ "time":0.6, "value":0.0 }
+				]
+			}
+		},
+		"effectList":
+		[
+			{
+				"type": "particle",
+				"name": "Explosion_01",
+				"offset": { "x": 0.0, "y": 0.0, "z": 0.0 },
+				"attached": true,
+				"delay": 0.0
+			},
+			{
+				"type": "audio",
+				"name": "Gas Explosion",
+				"offset": { "x": 0.0, "y": 0.0, "z": 0.0 },
+				"parameters":
+				[
+					"size"
+				],
+				"delay": 0.0
+			},
+			{
+				"type": "pointLight",
+				"name": "",
+				"offset": { "x": 0.0, "y": 0.0, "z": 0.0 },
+				"parameters":
+				[
+					"color",
+					"radius",
+					"intensity"
+				],
+				"duration": 1.0,
+				"delay": 0.0
+			},
+			{
+				"type": "cameraShake",
+				"name": "",
+				"offset": { "x": 0.0, "y": 0.0, "z": 0.0 },
+				"parameters":
+				[
+					"shakeStrength",
+					"shakeRadius"
+				],
+				"duration": 0.4,
+				"delay": 0.0
+			},
+			{
+				"type": "particle",
+				"name": "TieFighter_debris",
+				"offset": { "x": 0.0, "y": 0.0, "z": 0.0 },
+				"attached": true,
+				"delay": 0.0
+			}
+		]
+	},
+	"XWing_explode" : {
+		"maxInstances": 64,
+		"parameterList":
+		{
+			"size": 0.5,
+			"color": "ffcc34",
+			"radius": 20.0,
+			"intensity": 8.0,
+			"shakeStrength": 1,
+			"shakeRadius": 50.0
+		},
+		"parameterCurves":
+		{
+			"radius":
+			{
+				"timeline":
+				[
+					{ "time":0.0, "value":0.0 },
+					{ "time":0.1, "value":20.0 },
+					{ "time":0.6, "value":0.0 }
+				]
+			}
+		},
+		"effectList":
+		[
+			{
+				"type": "particle",
+				"name": "Explosion_01",
+				"offset": { "x": 0.0, "y": 0.0, "z": 0.0 },
+				"attached": true,
+				"delay": 0.0
+			},
+			{
+				"type": "audio",
+				"name": "Gas Explosion",
+				"offset": { "x": 0.0, "y": 0.0, "z": 0.0 },
+				"parameters":
+				[
+					"size"
+				],
+				"delay": 0.0
+			},
+			{
+				"type": "pointLight",
+				"name": "",
+				"offset": { "x": 0.0, "y": 0.0, "z": 0.0 },
+				"parameters":
+				[
+					"color",
+					"radius",
+					"intensity"
+				],
+				"duration": 1.0,
+				"delay": 0.0
+			},
+			{
+				"type": "cameraShake",
+				"name": "",
+				"offset": { "x": 0.0, "y": 0.0, "z": 0.0 },
+				"parameters":
+				[
+					"shakeStrength",
+					"shakeRadius"
+				],
+				"duration": 0.4,
+				"delay": 0.0
+			},
+			{
+				"type": "particle",
+				"name": "XWing_debris",
+				"offset": { "x": 0.0, "y": 0.0, "z": 0.0 },
+				"attached": true,
+				"delay": 0.0
+			}
+		]
+	}
+}

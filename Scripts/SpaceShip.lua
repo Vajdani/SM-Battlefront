@@ -194,7 +194,9 @@ function SpaceShip:sv_onDeath(source)
 end
 
 function SpaceShip:sv_explode()
-    sm.physics.explode( self.harvestable.worldPosition, 10, 5, 10, 100, "PropaneTank - ExplosionBig" )
+    local pos = self.harvestable.worldPosition
+    sm.physics.explode( pos, 10, 5, 10, 100 )
+    sm.effect.playEffect( self.destroyEffect, pos, VEC3_ZERO, self.harvestable.worldRotation * ROTADJUST, VEC3_ONE, { Color = self.harvestable:getColor() } )
 
     local char = self.harvestable:getSeatCharacter()
     self.harvestable:destroy()
@@ -934,6 +936,7 @@ Carrier.name = "Carrier"
 ---@class TieFighter : Fighter
 TieFighter = class(Fighter)
 TieFighter.name = "TIE Fighter"
+TieFighter.destroyEffect = "TieFighter_explode"
 TieFighter.landOffset = 2.54
 TieFighter.primaryProjectile = PROJECTILE["TieFighter_primary"]
 TieFighter.collisionData = {
@@ -1023,6 +1026,7 @@ end
 ---@class XWing : Fighter
 XWing = class(Fighter)
 XWing.name = "X-Wing"
+XWing.destroyEffect = "XWing_explode"
 XWing.primaryProjectile = PROJECTILE["TieFighter_primary"]
 XWing.landOffset = 0.9
 XWing.hasTakeOffAnim = true

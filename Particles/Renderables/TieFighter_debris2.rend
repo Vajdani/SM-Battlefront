@@ -1,0 +1,17 @@
+{
+   "lodList" : [
+      {
+         "mesh" : "$CONTENT_DATA/Particles/Mesh/TieFighter_debris2.fbx",
+         "subMeshList" : [
+            {
+               "material" : "DifAsgNor",
+               "textureList" : [
+                  "$GAME_DATA/Textures/Default/default_dif.tga",
+                  "$GAME_DATA/Textures/Default/default_asg.tga",
+                  "$GAME_DATA/Textures/Default/default_nor.tga"
+               ]
+            }
+         ]
+      }
+   ]
+}

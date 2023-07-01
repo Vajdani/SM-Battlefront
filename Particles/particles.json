@@ -1,6 +1,8 @@
 {
    "particleSystemList" : [
       "beam_impact.json",
-      "wing_boost_line.json"
+      "wing_boost_line.json",
+      "TieFighter_debris.json",
+      "XWing_debris.json"
    ]
 }
