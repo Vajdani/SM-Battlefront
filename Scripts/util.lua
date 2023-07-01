@@ -8,6 +8,7 @@ ROTADJUST = sm.quat.angleAxis(math.rad(90), VEC3_RIGHT) * sm.quat.angleAxis(math
 QUAT_ZERO = sm.quat.identity()
 COLOR_WHITE = sm.color.new(1,1,1)
 COLOR_OVERHEAT = sm.color.new("#ff7f00")
+ROT_FWD_BWD = sm.vec3.getRotation(VEC3_UP, VEC3_UP * -1)
 
 LANDABLESURFACES = {
     terrainSurface = true,

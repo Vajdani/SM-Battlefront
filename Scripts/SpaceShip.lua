@@ -42,7 +42,6 @@ local angleAxis = sm.quat.angleAxis
 local clamp = sm.util.clamp
 local vec3_lerp = sm.vec3.lerp
 local quat_slerp = sm.quat.slerp
-local vec3_getrot = sm.vec3.getRotation
 
 function SpaceShip:server_onCreate()
     self.sv_beInSpace = false
@@ -464,12 +463,11 @@ function SpaceShip:client_onCreate()
 
     self.thrustEffects = {}
     if self.thrustEffectData then
-        local rot = self.harvestable.worldRotation
         for k, v in pairs(self.thrustEffectData) do
             local effect = sm.effect.createEffect(v.effect, self.harvestable)
-            local pos, _rot = v.getOffsets(rot)
+            local pos, rot = v.getOffsets()
             effect:setOffsetPosition(pos)
-            effect:setOffsetRotation(_rot)
+            effect:setOffsetRotation(rot)
             self.thrustEffects[#self.thrustEffects+1] = effect
         end
     end
@@ -521,8 +519,11 @@ end
 
 function SpaceShip:client_onUpdate(dt)
     local char = self.harvestable:getSeatCharacter()
+    local isLocal = char and char:getPlayer() == sm.localPlayer.getPlayer()
+
+    local canPlayFx = not isLocal or self.camMode ~= 1
     local playing = self.thrustEffects[1]:isPlaying()
-    local shouldPlay = char and self.cl_beInSpace and self.cl_nextInSpace
+    local shouldPlay = char and self.cl_beInSpace and self.cl_nextInSpace and canPlayFx
     if shouldPlay and not playing then
         self:cl_setEffectsState(self.thrustEffects, true)
     elseif not shouldPlay and playing then
@@ -530,7 +531,7 @@ function SpaceShip:client_onUpdate(dt)
     end
 
     local shipSpeed = round(self.cl_speed)
-    local displayBoost = self.cl_controls[5] and shipSpeed > self.lightBoost
+    local displayBoost = self.cl_controls[5] and shipSpeed > self.lightBoost and canPlayFx
     local boostDisplayed = self.boostEffects[1]:isPlaying()
     if displayBoost and not boostDisplayed then
         self:cl_setEffectsState(self.boostEffects, true)
@@ -543,7 +544,6 @@ function SpaceShip:client_onUpdate(dt)
         self.harvestable:setPoseWeight(0, self.animProgress)
     end
 
-    local isLocal = char and char:getPlayer() == sm.localPlayer.getPlayer()
     if not isLocal then
         --self.indicator:stop()
         self.crosshair:stop()
@@ -962,14 +962,14 @@ TieFighter.collisionData = {
 TieFighter.thrustEffectData = {
     {
         effect = "Thruster - Level 5",
-        getOffsets = function(rot)
-            return (VEC3_RIGHT - VEC3_UP) * 0.5, vec3_getrot(VEC3_UP, VEC3_UP * -1)
+        getOffsets = function()
+            return -VEC3_UP * 0.5 - VEC3_FWD * 0.4, ROT_FWD_BWD
         end
     },
     {
         effect = "Thruster - Level 5",
-        getOffsets = function(rot)
-            return (-VEC3_RIGHT - VEC3_UP) * 0.5, vec3_getrot(VEC3_UP, VEC3_UP * -1)
+        getOffsets = function()
+            return -VEC3_UP * 0.5 + VEC3_FWD * 0.4, ROT_FWD_BWD
         end
     }
 }
@@ -993,7 +993,7 @@ function TieFighter:getCamTransForm(camPos, camRot, dt)
     local newPos, newRot
     local lerpSpeed = (dt or 0) * self.camLerpSpeed
     if self.camMode == 1 then
-        local nextPos = pos + fwd * 2
+        local nextPos = pos + fwd * 0.25 --2
         newPos = dt and vec3_lerp(camPos, nextPos, lerpSpeed) or nextPos
     else
         local camDir = pos - camPos
@@ -1004,7 +1004,7 @@ function TieFighter:getCamTransForm(camPos, camRot, dt)
             self.camPos = pos - fwd * 5 + up * 2
         end
 
-        local hit, result = sm.physics.raycast(camPos, self.camPos, nil, CAMERAFILTER)
+        local hit, result = sm.physics.raycast(camPos, self.camPos, self.harvestable, CAMERAFILTER)
         if hit then
             newPos = result.pointWorld + result.normalWorld * 0.5
         else
@@ -1059,26 +1059,26 @@ XWing.collisionData = {
 XWing.thrustEffectData = {
     {
         effect = "Thruster - Level 5",
-        getOffsets = function(rot)
-            return anglePlus * (-VEC3_UP * 5.15 + VEC3_RIGHT * 1.225 + VEC3_FWD * 0.45), vec3_getrot(VEC3_UP, VEC3_UP * -1)
+        getOffsets = function()
+            return anglePlus * (-VEC3_UP * 5.15 + VEC3_RIGHT * 1.225 + VEC3_FWD * 0.45), ROT_FWD_BWD
         end
     },
     {
         effect = "Thruster - Level 5",
-        getOffsets = function(rot)
-            return anglePlus * (-VEC3_UP * 5.15 - VEC3_RIGHT * 1.225 - VEC3_FWD * 0.45), vec3_getrot(VEC3_UP, VEC3_UP * -1)
+        getOffsets = function()
+            return anglePlus * (-VEC3_UP * 5.15 - VEC3_RIGHT * 1.225 - VEC3_FWD * 0.45), ROT_FWD_BWD
         end
     },
     {
         effect = "Thruster - Level 5",
-        getOffsets = function(rot)
-            return angleMinu * (-VEC3_UP * 5.15 + VEC3_RIGHT * 1.225 - VEC3_FWD * 0.45), vec3_getrot(VEC3_UP, VEC3_UP * -1)
+        getOffsets = function()
+            return angleMinu * (-VEC3_UP * 5.15 + VEC3_RIGHT * 1.225 - VEC3_FWD * 0.45), ROT_FWD_BWD
         end
     },
     {
         effect = "Thruster - Level 5",
-        getOffsets = function(rot)
-            return angleMinu * (-VEC3_UP * 5.15 - VEC3_RIGHT * 1.225 + VEC3_FWD * 0.45), vec3_getrot(VEC3_UP, VEC3_UP * -1)
+        getOffsets = function()
+            return angleMinu * (-VEC3_UP * 5.15 - VEC3_RIGHT * 1.225 + VEC3_FWD * 0.45), ROT_FWD_BWD
         end
     }
 }
@@ -1114,7 +1114,7 @@ function XWing:getCamTransForm(camPos, camRot, dt)
             self.camPos = pos - fwd * 10 + up * 1.5
         end
 
-        local hit, result = sm.physics.raycast(camPos, self.camPos, nil, CAMERAFILTER)
+        local hit, result = sm.physics.raycast(camPos, self.camPos, self.harvestable, CAMERAFILTER)
         if hit then
             newPos = result.pointWorld + result.normalWorld * 0.5
         else

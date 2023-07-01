@@ -1,7 +1,7 @@
 {
    "lodList" : [
       {
-         "mesh" : "$CONTENT_DATA/Kinematics/Mesh/TieFighter.fbx",
+         "mesh" : "$CONTENT_DATA/Kinematics/Mesh/kin_spaceship_hshape.fbx",
          "subMeshList" : [
             {
                "material" : "DifAsgNor",
