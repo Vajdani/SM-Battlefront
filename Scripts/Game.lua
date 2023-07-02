@@ -5,6 +5,8 @@ Game.worldScriptClass = "CreativeTerrainWorld";]]
 dofile( "$SURVIVAL_DATA/Scripts/game/managers/UnitManager.lua" )
 dofile( "$SURVIVAL_DATA/Scripts/game/managers/EffectManager.lua" )
 
+---@class Game : GameClass
+---@field sv table
 Game = class()
 
 function Game.server_onCreate( self )

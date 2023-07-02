@@ -1004,7 +1004,7 @@ function TieFighter:getCamTransForm(camPos, camRot, dt)
             self.camPos = pos - fwd * 5 + up * 2
         end
 
-        local hit, result = sm.physics.raycast(camPos, self.camPos, self.harvestable, CAMERAFILTER)
+        local hit, result = sm.physics.raycast(pos, self.camPos, self.harvestable, CAMERAFILTER)
         if hit then
             newPos = result.pointWorld + result.normalWorld * 0.5
         else
@@ -1052,7 +1052,7 @@ XWing.collisionData = {
     {
         scale = sm.vec3.new(4.25, 2.5, 0.5),
         getTransform = function(pos, rot)
-            return pos + rot * VEC3_RIGHT * 2.75 - rot * VEC3_UP * 3, rot
+            return pos - rot * VEC3_RIGHT * 2.75 - rot * VEC3_UP * 3, rot
         end
     }
 }
@@ -1114,7 +1114,7 @@ function XWing:getCamTransForm(camPos, camRot, dt)
             self.camPos = pos - fwd * 10 + up * 1.5
         end
 
-        local hit, result = sm.physics.raycast(camPos, self.camPos, self.harvestable, CAMERAFILTER)
+        local hit, result = sm.physics.raycast(pos, self.camPos, self.harvestable, CAMERAFILTER)
         if hit then
             newPos = result.pointWorld + result.normalWorld * 0.5
         else
