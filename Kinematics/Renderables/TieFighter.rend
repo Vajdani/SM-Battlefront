@@ -4,19 +4,19 @@
          "mesh" : "$CONTENT_DATA/Kinematics/Mesh/kin_spaceship_hshape.fbx",
          "subMeshList" : [
             {
-               "material" : "DifAsgNor",
-               "textureList" : [
-                  "$GAME_DATA/Textures/Default/default_dif.tga",
-                  "$GAME_DATA/Textures/Default/default_asg.tga",
-                  "$GAME_DATA/Textures/Default/default_nor.tga"
-               ]
-            },
-            {
                "material" : "Glass",
                "textureList" : [
                   "$CONTENT_DATA/Kinematics/Textures/XWing_glass_dif.png",
                   "$GAME_DATA/Objects/Textures/Blocks/blk_glass_asg.tga",
                   "$GAME_DATA/Textures/Materialtextures/normal_nor.tga"
+               ]
+            },
+            {
+               "material" : "DifAsgNor",
+               "textureList" : [
+                  "$GAME_DATA/Textures/Default/default_dif.tga",
+                  "$GAME_DATA/Textures/Default/default_asg.tga",
+                  "$GAME_DATA/Textures/Default/default_nor.tga"
                ]
             }
          ]
