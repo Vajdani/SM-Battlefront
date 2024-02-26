@@ -1,6 +1,6 @@
+---@class BFPlayer : PlayerClass
+---@field maxHealth number
 Player = class( nil )
-Player.maxHealth = 100
-
 Player.maxStamina = 5
 Player.staminaDrain = 1
 Player.staminaGain = 0.8
@@ -12,10 +12,27 @@ dofile "$SURVIVAL_DATA/Scripts/game/util/Timer.lua"
 function Player.server_onCreate( self )
 	print("Player.server_onCreate")
 
+    self.maxHealth = 100
     self.health = self.maxHealth
     self.spaceShip = nil
 
     self:sv_updateClient()
+
+    self.player.publicData = {}
+end
+
+function Player:sv_setMaxHealth(health)
+    self.maxHealth = health
+    self.health = health
+    self:sv_updateClient()
+end
+
+function Player:sv_OnTeamSelect(team, player)
+    PlayerManager.JoinTeam(player, team)
+end
+
+function Player:sv_OnClassSelect(class, player)
+    PlayerManager.SelectClass(player, class)
 end
 
 function Player:sv_setSpaceShip(ship)
@@ -102,20 +119,120 @@ end
 
 
 function Player:client_onCreate()
+    self.player.clientPublicData = {}
+
     self.isLocal = self.player == sm.localPlayer.getPlayer()
 
     if not self.isLocal then return end
 
-    self.survivalHud = sm.gui.createSurvivalHudGui()
-	self.survivalHud:setVisible("WaterBar", false)
-	self.survivalHud:open()
-
     self.stamina = self.maxStamina
     self.blockSprint = false
+
+    g_localPlayerState = PLAYERSTATES.Menu
 end
 
 function Player:client_onUpdate(dt)
     if not self.isLocal then return end
+
+    self:cl_updatePlayer(dt)
+end
+
+function Player:cl_OnPlayerStateChange(state)
+    if state == PLAYERSTATES.Menu then
+        if g_survivalHud then
+			g_survivalHud:destroy()
+		end
+
+        sm.camera.setCameraState(3)
+        sm.camera.setPosition(sm.vec3.new(0,0,5))
+        sm.camera.setRotation(sm.quat.identity())
+        sm.localPlayer.setLockedControls(true)
+    elseif state == PLAYERSTATES.TeamSelect then
+        self.teamSelect = sm.gui.createGuiFromLayout("$CONTENT_DATA/Gui/Layouts/ClassSelect.layout", false, { hidesHotbar = true })
+        self.teamSelect:setText("Name", language_tag("teamSelect"))
+        self.teamSelect:setText("SubTitle", language_tag("teamSelect_sub"))
+
+        local pData = self.player.clientPublicData
+        local teams = pData.team and {} or { "" }
+        for k, team in pairs(GetTeams()) do
+            teams[team] = language_tag(team.."_name")
+        end
+
+		self.teamSelect:createDropDown("Options", "cl_OnTeamSelect", teams)
+
+        if pData.team then
+            self.teamSelect:setSelectedDropDownItem("Options", teams[pData.team])
+        end
+
+        self.teamSelect:open()
+    elseif state == PLAYERSTATES.ClassSelect then
+        self.classSelect = sm.gui.createGuiFromLayout("$CONTENT_DATA/Gui/Layouts/ClassSelect.layout", false, { hidesHotbar = true })
+        self.classSelect:setText("Name", language_tag("classSelect"))
+        self.classSelect:setText("SubTitle", language_tag("classSelect_sub"))
+
+        local pData = self.player.clientPublicData
+        print(IsClassInTeam(pData.class, pData.team), pData.class, pData.team)
+        local classes = IsClassInTeam(pData.class, pData.team) and {} or { "" }
+        for k, class in pairs(GetClassesForTeam(self.team)) do
+            classes[class] = language_tag(class.."_name")
+        end
+
+		self.classSelect:createDropDown("Options", "cl_OnClassSelect", classes)
+
+        if pData.class then
+            local class = classes[pData.class]
+            if class then
+                self.classSelect:setSelectedDropDownItem("Options", class)
+            end
+        end
+
+        self.classSelect:open()
+    elseif state == PLAYERSTATES.IsPlaying then
+        sm.camera.setCameraState(0)
+
+        g_survivalHud = sm.gui.createSurvivalHudGui()
+	    g_survivalHud:setVisible("WaterBar", false)
+	    g_survivalHud:open()
+
+		sm.localPlayer.setLockedControls(false)
+    end
+
+    g_localPlayerState = state
+end
+
+function Player:cl_OnTeamSelect(option)
+    local currentTeam = self.player.clientPublicData.team
+    if option == "" or currentTeam and language_tag(currentTeam.."_name") == option then return end
+
+    self.teamSelect:close()
+    self.teamSelect = nil
+
+    local teams = {}
+    for k, team in pairs(GetTeams()) do
+        teams[language_tag(team.."_name")] = team
+    end
+
+    self.team = teams[option]
+    self.network:sendToServer("sv_OnTeamSelect", self.team)
+end
+
+function Player:cl_OnClassSelect(option)
+    local currentClass = self.player.clientPublicData.class
+    if option == "" or currentClass and language_tag(currentClass.."_name") == option then return end
+
+    self.classSelect:close()
+    self.classSelect = nil
+
+    local classes = {}
+    for k, class in pairs(GetClassesForTeam(self.team)) do
+        classes[language_tag(class.."_name")] = class
+    end
+
+    self.network:sendToServer("sv_OnClassSelect", classes[option])
+end
+
+function Player:cl_updatePlayer(dt)
+    if g_cl_gameState ~= GAMESTATES.GameInProgress or g_localPlayerState ~= PLAYERSTATES.IsPlaying then return end
 
     local char = self.player.character
     if char then
@@ -133,7 +250,7 @@ function Player:client_onUpdate(dt)
     end
 
     sm.localPlayer.setBlockSprinting( self.blockSprint )
-	self.survivalHud:setSliderData( "Food", self.maxStamina * 100, self.stamina * 100 )
+	g_survivalHud:setSliderData( "Food", self.maxStamina * 100, self.stamina * 100 )
 end
 
 function Player:client_onReload()
@@ -170,10 +287,10 @@ function Player:client_onInteract()
 end
 
 function Player:client_onClientDataUpdate(data)
-    if not self.isLocal then return end
+    if not self.isLocal or g_cl_gameState == GAMESTATES.Menu then return end
 
     local health = data.health
-    self.survivalHud:setSliderData( "Health", data.maxHealth * 10, data.health * 10 )
+    g_survivalHud:setSliderData( "Health", data.maxHealth * 10, data.health * 10 )
 
     if health <= 0 then
 		sm.camera.setCameraState( 4 )
@@ -184,8 +301,8 @@ end
 
 function Player:cl_setUIState(state)
     if state then
-        self.survivalHud:open()
+        g_survivalHud:open()
     else
-        self.survivalHud:close()
+        g_survivalHud:close()
     end
 end

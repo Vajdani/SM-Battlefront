@@ -1,3 +1,17 @@
+GAMESTATES = {
+    Menu            = 0,
+    GameInProgress  = 1,
+    GameEnded       = 2
+}
+
+PLAYERSTATES = {
+    Menu        = 0,
+    TeamSelect  = 1,
+    ClassSelect = 2,
+    IsPlaying   = 3,
+    GameEnded   = 4
+}
+
 DEFAULTDIR = sm.vec3.new(0,1,0)
 VEC3_UP = sm.vec3.new(0,0,1)
 VEC3_FWD = sm.vec3.new(0,1,0)

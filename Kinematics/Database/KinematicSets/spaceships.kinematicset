@@ -17,7 +17,7 @@
 			"script": {
 				"class": "TieFighter",
 				"data": {},
-				"file": "$CONTENT_DATA/Scripts/SpaceShip.lua",
+				"file": "$CONTENT_DATA/Scripts/kinematics/SpaceShip.lua",
 				"seat": {
 					"bones": [
 						{
@@ -73,7 +73,7 @@
 			"script": {
 				"class": "XWing",
 				"data": {},
-				"file": "$CONTENT_DATA/Scripts/SpaceShip.lua",
+				"file": "$CONTENT_DATA/Scripts/kinematics/SpaceShip.lua",
 				"seat": {
 					"bones": [
 						{

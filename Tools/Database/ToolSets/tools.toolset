@@ -1,16 +1,23 @@
 {
-   "toolList" : [
-      {
-         "autoTool" : true,
-         "name" : "ProjectileManager",
-         "previewRenderable" : "$GAME_DATA/Character/Char_Tools/char_connecttool_preview.rend",
-         "previewRotation" : [ 1, 0, 0, 0, 0, -1, 0, 1, 0 ],
-         "script" : {
-            "class" : "ProjectileManager",
-            "data" : {},
-            "file" : "$CONTENT_DATA/Scripts/ProjectileManager.lua"
-         },
-         "uuid" : "8e9d032e-7f2b-4b16-ba9a-c67ae631b2db"
-      }
-   ]
+	"toolList":
+	[
+		{
+			"uuid": "c5ea0c2f-185b-48d6-b4df-45c386a575cc",
+			"previewRenderable": "$GAME_DATA/Character/Char_Tools/char_spudgun_preview.rend",
+			"previewRotation": [ 1, 0, 0, 0, 0, -1, 0, 1, 0 ],
+			"script": { "file": "$CONTENT_DATA/Scripts/tools/PotatoRifle.lua", "class": "PotatoRifle" }
+		},
+		{
+			"uuid": "f6250bf4-9726-406f-a29a-945c06e460e5",
+			"previewRenderable": "$GAME_DATA/Character/Char_Tools/char_spudgun_frier_preview.rend",
+			"previewRotation": [ 1, 0, 0, 0, 0, -1, 0, 1, 0 ],
+			"script": { "file": "$CONTENT_DATA/Scripts/tools/PotatoShotgun.lua", "class": "PotatoShotgun" }
+		},
+		{
+			"uuid": "9fde0601-c2ba-4c70-8d5c-2a7a9fdd122b",
+			"previewRenderable": "$GAME_DATA/Character/Char_Tools/char_spudgun_spinner_preview.rend",
+			"previewRotation": [ 1, 0, 0, 0, 0, -1, 0, 1, 0 ],
+			"script": { "file": "$CONTENT_DATA/Scripts/tools/PotatoGatling.lua", "class": "PotatoGatling" }
+		}
+	]
 }

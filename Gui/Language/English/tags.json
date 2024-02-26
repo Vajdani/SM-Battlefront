@@ -1,0 +1,20 @@
+{
+    "teamSelect": "Select a team!",
+    "teamSelect_sub": "",
+
+    "classSelect": "Select a class!",
+    "classSelect_sub": "",
+
+    "team_clones_name": "Clones",
+    "team_cis_name": "CIS",
+
+    "clones_soldier_name": "Clone Trooper",
+    "clones_heavy_name": "Clone Heavy Trooper",
+    "clones_sniper_name": "Clone SharpShooter",
+    "clones_engineer_name": "Clone Engineer",
+
+    "cis_soldier_name": "B2 Super Battle Droid",
+    "cis_heavy_name": "Assault Battle Droid",
+    "cis_sniper_name": "Assassin Droid",
+    "cis_engineer_name": "Engineer Droid"
+}

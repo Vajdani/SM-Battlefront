@@ -27,6 +27,8 @@ function World.server_onCreate( self )
 	self.sv = {}
 	self.sv.pathNodeManager = CreativePathNodeManager()
 	self.sv.pathNodeManager:sv_onCreate( self )
+
+	sm.scriptableObject.createScriptableObject(sm.uuid.new("7b56bc22-2b3a-44e2-9d46-4e6a8526a809"), {}, self.world) --ProjectileManager
 end
 
 function World.client_onCreate( self )
