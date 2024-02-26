@@ -29,13 +29,14 @@ dofile "$CONTENT_DATA/Scripts/util.lua"
 ---@class Projectile
 ---@field pos Vec3
 ---@field dir Vec3
+---@field lifeTime number
 ---@field line Line_beam
 ---@field effect Effect
 ---@field properties ProjectileProperties
 ---@field owner Character|Shape|Harvestable
 ---@field target Harvestable
 
----@class ProjectileManager : ToolClass
+---@class ProjectileManager : ScriptableObjectClass
 ---@field cl_projectiles Projectile[]
 ProjectileManager = class()
 ProjectileManager.lineStats = {
@@ -50,7 +51,7 @@ ProjectileManager.killTypes = {
 }
 
 function ProjectileManager:server_onCreate()
-    g_pManager = self.tool
+    g_pManager = self.scriptableObject
 
     self.sv_host = true
 end

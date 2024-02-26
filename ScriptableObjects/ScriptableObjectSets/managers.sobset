@@ -1,0 +1,22 @@
+{
+	"scriptableObjectList": [
+		{
+			"classname": "ProjectileManager",
+			"filename": "$CONTENT_DATA/Scripts/managers/ProjectileManager.lua",
+			"name": "ProjectileManager",
+			"uuid": "7b56bc22-2b3a-44e2-9d46-4e6a8526a809"
+		},
+		{
+			"filename": "$CONTENT_DATA/Scripts/managers/LanguageManager.lua",
+			"classname": "LanguageManager",
+			"name": "LanguageManager",
+			"uuid": "c0da37df-2906-42ea-b314-e8336c01d247"
+		},
+		{
+			"filename": "$CONTENT_DATA/Scripts/managers/PlayerManager.lua",
+			"classname": "PlayerManager",
+			"name": "PlayerManager",
+			"uuid": "82d5ac44-b59c-4d57-ba65-340c8e78e2f2"
+		}
+	]
+}

@@ -773,7 +773,7 @@ function Fighter:sv_fireProjectile(args, player)
     --if not self:verifyPacket(player) then return end
 
     local pos = args.pos
-    sm.event.sendToTool(
+    sm.event.sendToScriptableObject(
         g_pManager,
         "sv_createProjectile",
         {
