@@ -17,6 +17,12 @@
 			"classname": "PlayerManager",
 			"name": "PlayerManager",
 			"uuid": "82d5ac44-b59c-4d57-ba65-340c8e78e2f2"
+		},
+		{
+			"filename": "$CONTENT_DATA/Scripts/managers/ControlPointManager.lua",
+			"classname": "ControlPointManager",
+			"name": "ControlPointManager",
+			"uuid": "d977f0b5-d860-4653-874d-8c3103e7ac7e"
 		}
 	]
 }

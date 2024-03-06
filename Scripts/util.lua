@@ -12,6 +12,18 @@ PLAYERSTATES = {
     GameEnded   = 4
 }
 
+CPSTATUS = {
+    Idle = 0,
+    Capturing = 1,
+    CaptureConflict = 2
+}
+
+CPUPDATE = {
+    NewTeam = 0,
+    Captured = 1,
+    Idle = 2
+}
+
 DEFAULTDIR = sm.vec3.new(0,1,0)
 VEC3_UP = sm.vec3.new(0,0,1)
 VEC3_FWD = sm.vec3.new(0,1,0)

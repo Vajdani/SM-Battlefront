@@ -104,6 +104,18 @@
          "rotationSet" : "PropY",
          "sticky" : "-Y+Y",
          "uuid" : "ae27acb9-3eff-4530-bd4d-a8c3396430f5"
+      },
+      {
+         "box" : {
+            "x" : 1,
+            "y" : 1,
+            "z" : 1
+         },
+         "name" : "obj_cp_logo_cis",
+         "physicsMaterial" : "Default",
+         "renderable" : "$CONTENT_DATA/Objects/Renderables/obj_cp_logo_cis.rend",
+         "rotationSet" : "Default",
+         "uuid" : "b7e42cd5-7371-4503-ba24-172a8e9a2888"
       }
    ]
 }

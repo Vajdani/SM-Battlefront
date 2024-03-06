@@ -1,0 +1,13 @@
+{
+   "lodList" : [
+      {
+         "mesh" : "$CONTENT_DATA/Objects/Mesh/obj_cp_logo_cis.fbx",
+         "subMeshList" : [
+            {
+               "material" : "LightCone",
+               "textureList" : [ "$GAME_DATA/Textures/Default/default_dif.tga", "", "" ]
+            }
+         ]
+      }
+   ]
+}

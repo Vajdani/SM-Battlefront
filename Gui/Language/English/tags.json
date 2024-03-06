@@ -5,14 +5,13 @@
     "classSelect": "Select a class!",
     "classSelect_sub": "",
 
-    "team_clones_name": "Clones",
-    "team_cis_name": "CIS",
+    "team_clones_name": "Mechanics Union",
+    "clones_soldier_name": "Mechanic Trooper",
+    "clones_heavy_name": "Mechanic Heavy Trooper",
+    "clones_sniper_name": "Mechanic SharpShooter",
+    "clones_engineer_name": "Mechanic Engineer",
 
-    "clones_soldier_name": "Clone Trooper",
-    "clones_heavy_name": "Clone Heavy Trooper",
-    "clones_sniper_name": "Clone SharpShooter",
-    "clones_engineer_name": "Clone Engineer",
-
+    "team_cis_name": "WMF", //Wonk Military Forces
     "cis_soldier_name": "B2 Super Battle Droid",
     "cis_heavy_name": "Assault Battle Droid",
     "cis_sniper_name": "Assassin Droid",

@@ -1,4 +1,21 @@
 {
-    "partList": [
-    ]
+   "partList" : [
+      {
+         "hull" : {
+            "col" : "$CONTENT_DATA/Objects/Mesh/obj_objective_control_point_col.fbx",
+            "x" : 3,
+            "y" : 1,
+            "z" : 3
+         },
+         "name" : "obj_objective_control_point",
+         "physicsMaterial" : "Metal",
+         "renderable" : "$CONTENT_DATA/Objects/Renderables/obj_objective_control_point.rend",
+         "rotationSet" : "PropY",
+         "scripted" : {
+            "classname" : "ControlPoint",
+            "filename" : "$CONTENT_DATA/Scripts/interactable/ControlPoint.lua"
+         },
+         "uuid" : "436dcb25-9541-4293-ae77-375d3c65be89"
+      }
+   ]
 }

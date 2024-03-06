@@ -89,7 +89,10 @@ local classDB = {
         health = 100,
         speed = 1,
         weapons = {
-
+            primary = "c5ea0c2f-185b-48d6-b4df-45c386a575cc",
+            secondary = "c5ea0c2f-185b-48d6-b4df-45c386a575cc",
+            equipment1 = "c5ea0c2f-185b-48d6-b4df-45c386a575cc",
+            equipment2 = "c5ea0c2f-185b-48d6-b4df-45c386a575cc",
         }
     }
 }

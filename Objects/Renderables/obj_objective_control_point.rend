@@ -1,0 +1,25 @@
+{
+   "lodList" : [
+      {
+         "mesh" : "$CONTENT_DATA/Objects/Mesh/obj_objective_control_point.fbx",
+         "subMeshList" : [
+            {
+               "material" : "DifAsgNor",
+               "textureList" : [
+                  "$CONTENT_DATA/Objects/Textures/obj_objective_control_point_dif.png",
+                  "$GAME_DATA/Textures/Default/default_asg.tga",
+                  "$GAME_DATA/Textures/Default/default_nor.tga"
+               ]
+            },
+            {
+               "material" : "LightCone",
+               "textureList" : [
+                  "$CONTENT_DATA/Objects/Textures/obj_objective_control_point_dif.png",
+                  "",
+                  ""
+               ]
+            }
+         ]
+      }
+   ]
+}
